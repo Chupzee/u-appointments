@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import type { Appointment } from "../types/appointment";
 import ConfirmModal from "./ConfirmModal";
+import { isAppointmentDirty } from "../domain/isDirty";
 
 type Props = {
   editingAppointment: Appointment | null;
@@ -27,10 +28,7 @@ const AddAppointmentForm = ({
       return;
     }
 
-    const dirty =
-      formData.date !== editingAppointment.date ||
-      formData.type !== editingAppointment.type ||
-      formData.notes !== (editingAppointment.notes ?? "");
+    const dirty = isAppointmentDirty(editingAppointment, formData);
 
     onDirtyChange(dirty);
   }, [formData, editingAppointment, onDirtyChange]);

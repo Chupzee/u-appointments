@@ -8,6 +8,11 @@ import type { Appointment } from "../types/appointment";
 import { sortAppointmentsByDate } from "../utils/sortAppointments";
 import ConfirmModal from "../components/ConfirmModal";
 import AppointmentModal from "../components/AppointmentModal";
+import {
+  removeAppointment,
+  updateAppointment,
+  addAppointment,
+} from "../domain/appoinments";
 
 const Dashboard: React.FC = () => {
   const [appointments, setAppointments] =
@@ -20,26 +25,14 @@ const Dashboard: React.FC = () => {
   const [appointmentToDelete, setAppointmentToDelete] =
     useState<Appointment | null>(null);
 
-  const addAppointment = (newAppointment: Appointment): void => {
-    setAppointments((prev) =>
-      sortAppointmentsByDate([...prev, newAppointment])
-    );
+  const handleAddAppointment = (newAppointment: Appointment): void => {
+    setAppointments((prev) => addAppointment(prev, newAppointment));
     setModalOpen(false);
   };
 
-  const updateAppointment = (updatedAppointment: Appointment): void => {
-    setAppointments((prev) =>
-      sortAppointmentsByDate(
-        prev.map((a) =>
-          a.id === updatedAppointment.id ? updatedAppointment : a
-        )
-      )
-    );
+  const handleUpdateAppointment = (updatedAppointment: Appointment): void => {
+    setAppointments((prev) => updateAppointment(prev, updatedAppointment));
     closeModal();
-  };
-
-  const deleteAppointment = (id: number): void => {
-    setAppointments((prev) => prev.filter((a) => a.id !== id));
   };
 
   const openCreateModal = (): void => {
@@ -64,9 +57,7 @@ const Dashboard: React.FC = () => {
   const confirmDelete = () => {
     if (!appointmentToDelete) return;
 
-    setAppointments((prev) =>
-      prev.filter((a) => a.id !== appointmentToDelete.id)
-    );
+    setAppointments((prev) => removeAppointment(prev, appointmentToDelete.id));
 
     setAppointmentToDelete(null);
   };
@@ -102,8 +93,8 @@ const Dashboard: React.FC = () => {
         isOpen={isModalOpen}
         editingAppointment={editingAppointment}
         onClose={closeModal}
-        onAdd={addAppointment}
-        onUpdate={updateAppointment}
+        onAdd={handleAddAppointment}
+        onUpdate={handleUpdateAppointment}
       />
 
       <ConfirmModal
