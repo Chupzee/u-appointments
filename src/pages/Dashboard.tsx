@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "../components/Header";
 import AppointmentList from "../components/AppointmentList";
 import AddAppointmentForm from "../components/AddAppointmentForm";
@@ -9,14 +9,20 @@ import { sortAppointmentsByDate } from "../utils/sortAppointments";
 import ConfirmModal from "../components/ConfirmModal";
 import AppointmentModal from "../components/AppointmentModal";
 import {
+  loadAppointments,
+  saveAppointments,
+} from "../services/appointmentStorage";
+import {
   removeAppointment,
   updateAppointment,
   addAppointment,
-} from "../domain/appoinments";
+} from "../domain/appointments";
 
 const Dashboard: React.FC = () => {
-  const [appointments, setAppointments] =
-    useState<Appointment[]>(initialAppointments);
+  const [appointments, setAppointments] = useState<Appointment[]>(() => {
+    const stored = loadAppointments();
+    return stored.length ? stored : initialAppointments;
+  });
 
   const [isModalOpen, setModalOpen] = useState<boolean>(false);
 
@@ -65,6 +71,10 @@ const Dashboard: React.FC = () => {
   const cancelDelete = () => {
     setAppointmentToDelete(null);
   };
+
+  useEffect(() => {
+    saveAppointments(appointments);
+  }, [appointments]);
 
   return (
     <div className="min-h-screen bg-gray-100">
