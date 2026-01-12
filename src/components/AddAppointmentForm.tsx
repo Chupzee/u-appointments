@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import type { Appointment } from "../types/appointment";
-import ConfirmModal from "./ConfirmModal";
 import { isAppointmentDirty } from "../domain/isDirty";
+import { appointmentSchema } from "../validation/appointmentSchema";
 
 type Props = {
   editingAppointment: Appointment | null;
@@ -11,6 +11,8 @@ type Props = {
   isDirty: boolean;
 };
 
+type FormErrors = Partial<Record<keyof Appointment, string[]>>;
+
 const AddAppointmentForm = ({
   onAdd,
   onUpdate,
@@ -18,9 +20,21 @@ const AddAppointmentForm = ({
   onDirtyChange,
   isDirty,
 }: Props) => {
+  const clearFieldError = (field: keyof Appointment) => {
+    setErrors((prev) => {
+      if (!prev[field]) return prev;
+
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  };
+
   const [formData, setFormData] = useState<Appointment>(
     editingAppointment || { id: 0, date: "", type: "", notes: "" }
   );
+
+  const [errors, setErrors] = useState<FormErrors>({});
 
   useEffect(() => {
     if (!editingAppointment) {
@@ -37,18 +51,25 @@ const AddAppointmentForm = ({
 
   const submit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!formData.date || !formData.type) return;
 
-    const newAppointment: Appointment = {
-      id: Date.now(),
-      date: formData.date,
-      type: formData.type,
-      notes: formData.notes,
+    const candidate: Appointment = {
+      ...formData,
+      id: isEditing ? editingAppointment!.id : Date.now(),
     };
+
+    const result = appointmentSchema.safeParse(candidate);
+
+    if (!result.success) {
+      setErrors(result.error.flatten().fieldErrors);
+      return;
+    }
+
+    setErrors({});
+
     if (isEditing) {
-      onUpdate({ ...newAppointment, id: editingAppointment!.id });
+      onUpdate(result.data);
     } else {
-      onAdd(newAppointment);
+      onAdd(result.data);
     }
 
     setFormData({ id: 0, date: "", type: "", notes: "" });
@@ -61,10 +82,15 @@ const AddAppointmentForm = ({
         <input
           type="date"
           value={formData.date}
-          onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+          onChange={(e) => {
+            setFormData({ ...formData, date: e.target.value });
+            setErrors((prev) => ({ ...prev, date: undefined }));
+          }}
           className="p-2 border rounded"
-          required
         />
+        {errors.date && (
+          <p className="text-sm text-red-600">{errors.date[0]}</p>
+        )}
       </div>
       <div className="flex flex-col">
         <label className="text-sm font-medium">Typ</label>
@@ -72,18 +98,25 @@ const AddAppointmentForm = ({
           type="text"
           placeholder="z. B. U7, Impfung, Kontrolle ..."
           value={formData.type}
-          onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+          onChange={(e) => {
+            setFormData({ ...formData, type: e.target.value });
+            clearFieldError("type");
+          }}
           className="p-2 border rounded"
-          required
         />
+        {errors.type && (
+          <p className="text-sm text-red-600">{errors.type[0]}</p>
+        )}
       </div>
-      .
       <div className="flex flex-col">
         <label className="text-sm font-medium">Notizen</label>
         <textarea
           placeholder="Optional"
           value={formData.notes}
-          onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+          onChange={(e) => {
+            setFormData({ ...formData, notes: e.target.value });
+            clearFieldError("notes");
+          }}
           className="p-2 border rounded"
         />
       </div>
