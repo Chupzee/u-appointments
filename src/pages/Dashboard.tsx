@@ -3,26 +3,23 @@ import Header from "../components/Header";
 import AppointmentList from "../components/AppointmentList";
 import AddAppointmentForm from "../components/AddAppointmentForm";
 import Modal from "../components/Modal";
-import { appointments as initialAppointments } from "../data/appointments";
 import type { Appointment } from "../types/appointment";
 import { sortAppointmentsByDate } from "../utils/sortAppointments";
 import ConfirmModal from "../components/ConfirmModal";
 import AppointmentModal from "../components/AppointmentModal";
 import {
-  loadAppointments,
-  saveAppointments,
-} from "../services/appointmentStorage";
-import {
-  removeAppointment,
-  updateAppointment,
-  addAppointment,
-} from "../domain/appointments";
+  useAppointmentsQuery,
+  useAddAppointmentMutation,
+  useUpdateAppointmentMutation,
+  useRemoveAppointmentMutation,
+} from "../queries/appointments";
 
 const Dashboard: React.FC = () => {
-  const [appointments, setAppointments] = useState<Appointment[]>(() => {
-    const stored = loadAppointments();
-    return stored.length ? stored : initialAppointments;
-  });
+  const { data: appointments = [], isLoading } = useAppointmentsQuery();
+
+  const addMutation = useAddAppointmentMutation();
+  const updateMutation = useUpdateAppointmentMutation();
+  const removeMutation = useRemoveAppointmentMutation();
 
   const [isModalOpen, setModalOpen] = useState<boolean>(false);
 
@@ -32,12 +29,12 @@ const Dashboard: React.FC = () => {
     useState<Appointment | null>(null);
 
   const handleAddAppointment = (newAppointment: Appointment): void => {
-    setAppointments((prev) => addAppointment(prev, newAppointment));
+    addMutation.mutate(newAppointment);
     setModalOpen(false);
   };
 
   const handleUpdateAppointment = (updatedAppointment: Appointment): void => {
-    setAppointments((prev) => updateAppointment(prev, updatedAppointment));
+    updateMutation.mutate(updatedAppointment);
     closeModal();
   };
 
@@ -63,7 +60,7 @@ const Dashboard: React.FC = () => {
   const confirmDelete = () => {
     if (!appointmentToDelete) return;
 
-    setAppointments((prev) => removeAppointment(prev, appointmentToDelete.id));
+    removeMutation.mutate(appointmentToDelete.id);
 
     setAppointmentToDelete(null);
   };
@@ -72,9 +69,9 @@ const Dashboard: React.FC = () => {
     setAppointmentToDelete(null);
   };
 
-  useEffect(() => {
-    saveAppointments(appointments);
-  }, [appointments]);
+  if (isLoading) {
+    return <div className="p-6">Loading...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-100">
