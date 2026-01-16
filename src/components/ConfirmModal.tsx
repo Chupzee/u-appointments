@@ -1,4 +1,4 @@
-import React from "react";
+import { useEffect, useRef } from "react";
 import Modal from "./Modal";
 
 type Props = {
@@ -20,7 +20,14 @@ const ConfirmModal = ({
   onConfirm,
   onCancel,
 }: Props) => {
-  if (!isOpen) return null;
+  const cancelButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      // Focus the safe action by default
+      cancelButtonRef.current?.focus();
+    }
+  }, [isOpen]);
 
   const confirmStyles =
     confirmVariant === "danger"
@@ -28,14 +35,27 @@ const ConfirmModal = ({
       : "bg-blue-600 hover:bg-blue-700";
 
   return (
-    <Modal isOpen={isOpen} onClose={onCancel}>
+    <Modal
+      isOpen={isOpen}
+      onRequestClose={onCancel}
+      title={title}
+      role="alertdialog"
+    >
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold">{title}</h3>
+        {/* The title is already rendered by Modal */}
 
-        {description && <p className="text-sm text-gray-600">{description}</p>}
+        {description && (
+          <p className="text-sm text-gray-600" id="confirm-description">
+            {description}
+          </p>
+        )}
 
         <div className="flex justify-end gap-3">
-          <button onClick={onCancel} className="px-4 py-2 border rounded">
+          <button
+            ref={cancelButtonRef}
+            onClick={onCancel}
+            className="px-4 py-2 border rounded"
+          >
             Abbrechen
           </button>
 
