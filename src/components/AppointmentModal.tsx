@@ -22,6 +22,10 @@ const AppointmentModal = ({
   const [isDirty, setIsDirty] = useState(false);
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
 
+  const title = editingAppointment
+    ? "Termin bearbeiten"
+    : "Neuen Termin anlegen";
+
   const requestClose = () => {
     if (!isDirty) {
       onClose();
@@ -37,13 +41,18 @@ const AppointmentModal = ({
 
   return (
     <>
-      <Modal isOpen={isOpen} onRequestClose={requestClose}>
+      <Modal
+        isOpen={isOpen && !showDiscardConfirm}
+        onRequestClose={requestClose}
+        title={title}
+      >
         <AddAppointmentForm
           editingAppointment={editingAppointment}
           onAdd={onAdd}
           onUpdate={onUpdate}
           isDirty={isDirty}
           onDirtyChange={setIsDirty}
+          onCancel={requestClose}
         />
       </Modal>
 
