@@ -8,6 +8,9 @@ type Props = {
   role?: "dialog" | "alertdialog";
 };
 
+const FOCUSABLE_SELECTOR =
+  'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 const Modal = ({
   isOpen,
   onRequestClose,
@@ -21,54 +24,59 @@ const Modal = ({
   useEffect(() => {
     if (!isOpen) return;
 
-    // Store previously focused element
     previouslyFocusedElement.current = document.activeElement as HTMLElement;
 
-    // Focus first focusable element inside modal
-    const focusable = dialogRef.current?.querySelector<HTMLElement>(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    );
-
-    focusable?.focus();
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        e.preventDefault();
-        onRequestClose();
+    requestAnimationFrame(() => {
+      const focusable =
+        dialogRef.current?.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
+      if (focusable) {
+        focusable.focus();
+      } else {
+        dialogRef.current?.focus();
       }
-
-      if (e.key === "Tab") {
-        trapFocus(e);
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
+    });
 
     return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-
-      // Restore focus
       previouslyFocusedElement.current?.focus();
     };
-  }, [isOpen, onRequestClose]);
+  }, [isOpen]);
 
-  const trapFocus = (e: KeyboardEvent) => {
-    const focusableElements = dialogRef.current?.querySelectorAll<HTMLElement>(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (!dialogRef.current) return;
+
+    if (e.key === "Escape") {
+      e.preventDefault();
+      onRequestClose();
+      return;
+    }
+
+    if (e.key !== "Tab") return;
+
+    e.preventDefault();
+
+    const focusables = Array.from(
+      dialogRef.current.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      )
     );
 
-    if (!focusableElements || focusableElements.length === 0) return;
-
-    const first = focusableElements[0];
-    const last = focusableElements[focusableElements.length - 1];
-
-    if (e.shiftKey && document.activeElement === first) {
-      e.preventDefault();
-      last.focus();
-    } else if (!e.shiftKey && document.activeElement === last) {
-      e.preventDefault();
-      first.focus();
+    if (focusables.length === 0) {
+      dialogRef.current.focus();
+      return;
     }
+
+    const current = document.activeElement as HTMLElement;
+    const index = focusables.indexOf(current);
+
+    let nextIndex;
+
+    if (e.shiftKey) {
+      nextIndex = index <= 0 ? focusables.length - 1 : index - 1;
+    } else {
+      nextIndex = index === focusables.length - 1 ? 0 : index + 1;
+    }
+
+    focusables[nextIndex].focus();
   };
 
   if (!isOpen) return null;
@@ -87,6 +95,8 @@ const Modal = ({
         role={role}
         aria-modal="true"
         aria-labelledby={title ? "modal-title" : undefined}
+        onKeyDownCapture={handleKeyDown}
+        tabIndex={-1}
         className="relative bg-white rounded-lg p-6 z-10 min-w-[400px] outline-none"
       >
         {/* Title (optional but recommended) */}
