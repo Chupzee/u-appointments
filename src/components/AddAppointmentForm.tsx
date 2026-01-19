@@ -142,7 +142,7 @@ const AddAppointmentForm = ({
           className="p-2 border rounded"
         />
         {errors.type && (
-          <p id="type-error" className="text-sm text-red-600">
+          <p id="type-error" className="text-sm text-red-600" role="alert">
             {errors.type[0]}
           </p>
         )}
@@ -166,7 +166,7 @@ const AddAppointmentForm = ({
           className="p-2 border rounded"
         />
         {errors.notes && (
-          <p id="notes-error" className="text-sm text-red-600">
+          <p id="notes-error" className="text-sm text-red-600" role="alert">
             {errors.notes[0]}
           </p>
         )}
