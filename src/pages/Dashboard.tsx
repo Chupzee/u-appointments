@@ -13,9 +13,20 @@ import {
   useUpdateAppointmentMutation,
   useRemoveAppointmentMutation,
 } from "../queries/appointments";
+import { getVisibleAppointments } from "../domain/appointmentsView";
 
 const Dashboard: React.FC = () => {
   const { data: appointments = [], isLoading } = useAppointmentsQuery();
+
+  const [query, setQuery] = useState("");
+  const [show, setShow] = useState<"upcoming" | "all" | "past">("upcoming");
+  const [sort, setSort] = useState<"asc" | "desc">("asc");
+
+  const visibleAppointments = getVisibleAppointments(appointments, {
+    query,
+    show,
+    sort,
+  });
 
   const addMutation = useAddAppointmentMutation();
   const updateMutation = useUpdateAppointmentMutation();
@@ -88,9 +99,39 @@ const Dashboard: React.FC = () => {
             Neuer Termin
           </button>
         </div>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Suchen (Typ, Notizen)…"
+            className="w-full sm:w-80 p-2 border rounded"
+          />
+
+          <div className="flex gap-2 items-center">
+            <select
+              value={show}
+              onChange={(e) => setShow(e.target.value as any)}
+              className="p-2 border rounded"
+              aria-label="Filter"
+            >
+              <option value="upcoming">Bevorstehend</option>
+              <option value="all">Alle</option>
+              <option value="past"></option>
+            </select>
+
+            <button
+              type="button"
+              onClick={() => setSort((s) => (s === "asc" ? "desc" : "asc"))}
+              className="px-3 py-2 border rounded"
+              aria-label="Sortierung umschalten"
+            >
+              {sort === "asc" ? "↑" : "↓"}
+            </button>
+          </div>
+        </div>
 
         <AppointmentList
-          appointments={appointments}
+          appointments={visibleAppointments}
           onEdit={openEditModal}
           onDelete={requestDelete}
         />
