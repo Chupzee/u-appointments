@@ -14,6 +14,7 @@ import {
   useRemoveAppointmentMutation,
 } from "../queries/appointments";
 import { getVisibleAppointments } from "../domain/appointmentsView";
+import AppointmentControls from "../components/AppointmentControls";
 
 const Dashboard: React.FC = () => {
   const { data: appointments = [], isLoading } = useAppointmentsQuery();
@@ -99,36 +100,14 @@ const Dashboard: React.FC = () => {
             Neuer Termin
           </button>
         </div>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Suchen (Typ, Notizen)…"
-            className="w-full sm:w-80 p-2 border rounded"
-          />
-
-          <div className="flex gap-2 items-center">
-            <select
-              value={show}
-              onChange={(e) => setShow(e.target.value as any)}
-              className="p-2 border rounded"
-              aria-label="Filter"
-            >
-              <option value="upcoming">Bevorstehend</option>
-              <option value="all">Alle</option>
-              <option value="past"></option>
-            </select>
-
-            <button
-              type="button"
-              onClick={() => setSort((s) => (s === "asc" ? "desc" : "asc"))}
-              className="px-3 py-2 border rounded"
-              aria-label="Sortierung umschalten"
-            >
-              {sort === "asc" ? "↑" : "↓"}
-            </button>
-          </div>
-        </div>
+        <AppointmentControls
+          query={query}
+          onQueryChange={setQuery}
+          filter={show}
+          onFilterChange={setShow}
+          sort={sort}
+          onToggleSort={() => setSort((s) => (s === "asc" ? "desc" : "asc"))}
+        />
 
         <AppointmentList
           appointments={visibleAppointments}
