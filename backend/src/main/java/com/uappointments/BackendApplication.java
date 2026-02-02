@@ -1,4 +1,4 @@
-package de.woehe.uappointments;
+package com.uappointments;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

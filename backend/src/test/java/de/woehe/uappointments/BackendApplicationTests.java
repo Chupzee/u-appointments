@@ -1,4 +1,4 @@
-package de.woehe.uappointments;
+package com.uappointments;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
