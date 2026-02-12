@@ -1,11 +1,12 @@
 package com.uappointments.appointments.dto;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDate;
 
 public record AppointmentDto(
         Long id,
-        String title,
-        OffsetDateTime startsAt,
-        OffsetDateTime endsAt,
+        String type,
+        LocalDate date,
         String notes
-) {}
+        ) {
+
+}

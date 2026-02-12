@@ -1,12 +1,16 @@
 package com.uappointments.appointments.dto;
 
+import java.time.LocalDate;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import java.time.OffsetDateTime;
 
 public record CreateAppointmentRequest(
-        @NotBlank String title,
-        @NotNull OffsetDateTime startsAt,
-        @NotNull OffsetDateTime endsAt,
+        @NotBlank
+        String type,
+        @NotNull
+        LocalDate date,
         String notes
-) {}
+        ) {
+
+}
