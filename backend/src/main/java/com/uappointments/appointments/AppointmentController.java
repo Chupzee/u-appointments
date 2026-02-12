@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.uappointments.appointments.dto.AppointmentDto;
 import com.uappointments.appointments.dto.CreateAppointmentRequest;
@@ -43,13 +44,15 @@ public class AppointmentController {
 
     @GetMapping("/{id}")
     public AppointmentDto get(@PathVariable Long id) {
-        var entity = repo.findById(id).orElseThrow(() -> new IllegalArgumentException("Not found"));
+        var entity = repo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         return toDto(entity);
     }
 
     @PutMapping("/{id}")
     public AppointmentDto update(@PathVariable Long id, @Valid @RequestBody CreateAppointmentRequest req) {
-        var entity = repo.findById(id).orElseThrow(() -> new IllegalArgumentException("Not found"));
+        var entity = repo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         entity.setType(req.type());
         entity.setDate(req.date());
         entity.setNotes(req.notes());
