@@ -30,6 +30,10 @@ jobs:
         working-directory: backend
         run: ./gradlew test
 
+      - name: Build production jar (includes frontend)
+        working-directory: backend
+        run: ./gradlew bootJar
+
   frontend:
     name: Frontend (test/build)
     runs-on: ubuntu-latest
