@@ -82,7 +82,7 @@ const Dashboard: React.FC = () => {
   };
 
   if (isLoading) {
-    return <div className="p-6">Loading...</div>;
+    return <div className="p-6">Termine laden...</div>;
   }
 
   return (
@@ -91,7 +91,7 @@ const Dashboard: React.FC = () => {
 
       <main className="p-6 space-y-6">
         <div className="flex justify-between items-center">
-          <h2 className="text-xl font-semibold">Upcoming Appointments</h2>
+          <h2 className="text-xl font-semibold">Terminplaner</h2>
 
           <button
             onClick={openCreateModal}
