@@ -39,6 +39,32 @@ dependencies {
 }
 
 
+def frontendDir = file("${rootDir}/../frontend")
+
+tasks.register('frontendNpmCi', Exec) {
+  workingDir frontendDir
+  commandLine 'npm', 'ci'
+}
+
+tasks.register('frontendBuild', Exec) {
+  dependsOn 'frontendNpmCi'
+  workingDir frontendDir
+  commandLine 'npm', 'run', 'build'
+}
+
+tasks.register('copyFrontendToResources', Copy) {
+  dependsOn 'frontendBuild'
+  from "${frontendDir}/dist"
+  into "${projectDir}/src/main/resources/static"
+}
+
+// Ensure the frontend build is included in the jar resources
+tasks.named('processResources') {
+  dependsOn 'copyFrontendToResources'
+}
+
+
+
 tasks.named('test') {
 	useJUnitPlatform()
 }
