@@ -1,19 +1,7 @@
 import { http } from "./http";
+import type { Appointment } from "../types/appointment";
+import type { CreateAppointmentInput } from "../types/appointment";
 
-export type Appointment = {
-  id: number;
-  title: string;
-  startsAt: string; // ISO string
-  endsAt: string;   // ISO string
-  notes?: string | null;
-};
-
-export type CreateAppointmentInput = {
-  title: string;
-  startsAt: string; // ISO string
-  endsAt: string;   // ISO string
-  notes?: string | null;
-};
 
 export function listAppointments(): Promise<Appointment[]> {
   return http<Appointment[]>("/api/appointments");
