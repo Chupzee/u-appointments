@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   backend:
-    name: Backend (Gradle test)
+    name: Backend (test + bootJar)
     runs-on: ubuntu-latest
 
     steps:
