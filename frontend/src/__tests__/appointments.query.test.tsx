@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -8,19 +8,6 @@ import {
   useAppointmentsQuery,
   useAddAppointmentMutation,
 } from "../queries/appointments";
-import type { Appointment } from "../types/appointment";
-
-// --- Mock storage layer ---
-vi.mock("../services/appointmentStorage", () => {
-  let store: Appointment[] = [];
-
-  return {
-    loadAppointments: vi.fn(async () => store),
-    saveAppointments: vi.fn(async (next: Appointment[]) => {
-      store = next;
-    }),
-  };
-});
 
 // --- Test component ---
 function TestComponent() {
@@ -33,7 +20,6 @@ function TestComponent() {
       <button
         onClick={() =>
           addMutation.mutate({
-            id: 1,
             date: "2025-01-01",
             type: "U7",
             notes: "",
@@ -50,9 +36,8 @@ function TestComponent() {
 function renderWithClient(ui: React.ReactNode) {
   const queryClient = new QueryClient({
     defaultOptions: {
-      queries: {
-        retry: false,
-      },
+      queries: { retry: false },
+      mutations: { retry: false },
     },
   });
 
@@ -62,22 +47,16 @@ function renderWithClient(ui: React.ReactNode) {
 }
 
 describe("appointments query layer", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it("adds an appointment and updates the UI", async () => {
+    const user = userEvent.setup();
     renderWithClient(<TestComponent />);
 
-    // initially 0
-    expect(screen.getByTestId("count").textContent).toBe("0");
+    expect(screen.getByTestId("count")).toHaveTextContent("0");
 
-    // click add
-    await userEvent.click(screen.getByText("Add"));
+    await user.click(screen.getByRole("button", { name: /add/i }));
 
-    // wait for UI update
     await waitFor(() => {
-      expect(screen.getByTestId("count").textContent).toBe("1");
+      expect(screen.getByTestId("count")).toHaveTextContent("1");
     });
   });
 });
